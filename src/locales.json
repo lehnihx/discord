@@ -4,5 +4,6 @@
 	"logged_in_as": "Logged in as",
 	"reply_pong": "Replies with Pong!",
 	"greet_lenix": "Hi Lenix!",
-	"reply_lenix": "Replies with Hi Lenix!"
+	"reply_lenix": "Replies with Hi Lenix!",
+	"not_eligible": "Server not eligible"
 }

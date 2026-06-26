@@ -4,6 +4,10 @@ import { replyToCommand } from "./methods"
 
 export const APP_ID = "1212430652134129664"
 
+export const CUSTOMERS = [
+	"1244750233582440488"
+]
+
 export const COMMANDS = [
 	{
 		name: "ping",
