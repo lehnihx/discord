@@ -1,25 +1,24 @@
-mod locales;
 mod constants;
+mod locales;
 mod types;
+mod wrappers;
 
 use poise::serenity_prelude as serenity;
 
+use constants::CUSTOMERS;
 use locales::t;
-use constants::{CUSTOMERS};
-use types::{Data, Error, Context};
-
+use types::{Context, Data, Error};
+use wrappers::{reply_to_command};
 
 async fn reject_if_not_customer(ctx: Context<'_>) -> Result<bool, Error> {
-    if ctx.guild_id().is_some_and(|guild_id| CUSTOMERS.contains(&guild_id.get())) {
+    if ctx
+        .guild_id()
+        .is_some_and(|guild_id| CUSTOMERS.contains(&guild_id.get()))
+    {
         return Ok(false);
     }
 
-    ctx.send(
-        poise::CreateReply::default()
-            .content(t("not_eligible"))
-            .ephemeral(true),
-    )
-    .await?;
+    reply_to_command(ctx, t("not_eligible"), true).await?;
 
     Ok(true)
 }
@@ -30,30 +29,14 @@ async fn ping(ctx: Context<'_>) -> Result<(), Error> {
         return Ok(());
     }
 
-    ctx.send(
-        poise::CreateReply::default()
-            .content(t("pong"))
-            .ephemeral(true),
-    )
-    .await?;
-
-    Ok(())
+    reply_to_command(ctx, t("pong"), true).await
 }
 
 #[poise::command(slash_command)]
 async fn lenix(ctx: Context<'_>) -> Result<(), Error> {
-    if reject_if_not_customer(ctx).await? {
-        return Ok(());
-    }
+    
 
-    ctx.send(
-        poise::CreateReply::default()
-            .content(t("greet_lenix"))
-            .ephemeral(true),
-    )
-    .await?;
-
-    Ok(())
+    reply_to_command(ctx, t("greet_lenix"), true).await
 }
 
 fn commands() -> Vec<poise::Command<Data, Error>> {
