@@ -1,6 +1,4 @@
-use crate::{
-	locales::t, types::{CommandConfig}, wrappers::reply_to_command,
-};
+use crate::{locales::t, types::CommandConfig, wrappers::reply_to_command};
 
 pub const COMMANDS: &[CommandConfig] = &[
     CommandConfig {

@@ -1,4 +1,9 @@
-use crate::{constants::{CUSTOMERS}, locales::t, types::{ActionFn, Context, Data, Error}, config::{COMMANDS}};
+use crate::{
+    config::COMMANDS,
+    constants::CUSTOMERS,
+    locales::t,
+    types::{ActionFn, Context, Data, Error},
+};
 
 pub async fn reply_to_command(
     ctx: Context<'_>,

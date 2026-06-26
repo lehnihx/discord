@@ -1,8 +1,8 @@
+mod config;
 mod constants;
 mod locales;
 mod types;
 mod wrappers;
-mod config;
 
 use poise::serenity_prelude as serenity;
 
