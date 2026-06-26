@@ -34,7 +34,9 @@ async fn ping(ctx: Context<'_>) -> Result<(), Error> {
 
 #[poise::command(slash_command)]
 async fn lenix(ctx: Context<'_>) -> Result<(), Error> {
-    
+    if reject_if_not_customer(ctx).await? {
+        return Ok(());
+    }
 
     reply_to_command(ctx, t("greet_lenix"), true).await
 }
