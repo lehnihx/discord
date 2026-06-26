@@ -1,6 +1,9 @@
 use poise::serenity_prelude as serenity;
 
-use crate::{locales::t, types::{Context, Error}, wrappers::reply_to_component};
+use crate::{
+  locales::t,
+  types::{Context, Error},
+};
 
 pub async fn handle_event(
   ctx: &serenity::Context,
@@ -37,17 +40,32 @@ pub async fn send_ai_space_prompt(ctx: Context<'_>) -> Result<(), Error> {
 
   Ok(())
 }
+
 async fn create_ai_space(
   ctx: &serenity::Context,
   component: &serenity::ComponentInteraction,
 ) -> Result<(), Error> {
+  component.defer_ephemeral(ctx).await?;
+
   let Some(guild_id) = component.guild_id else {
-    reply_to_component(ctx, component, t("ai_space_missing_guild"), true).await?;
+    component
+      .edit_response(
+        ctx,
+        serenity::EditInteractionResponse::new().content(t("ai_space_missing_guild")),
+      )
+      .await?;
+
     return Ok(());
   };
 
   let channel_name = format!("ai-{}", component.user.id.get());
-  let channels = guild_id.channels(&ctx.http).await?;
+  let channels = match guild_id.channels(&ctx.http).await {
+    Ok(channels) => channels,
+    Err(error) => {
+      respond_with_ai_space_error(ctx, component, &error).await?;
+      return Ok(());
+    }
+  };
 
   if let Some(channel) = channels
     .values()
@@ -58,7 +76,7 @@ async fn create_ai_space(
   }
 
   let bot_user_id = ctx.cache.current_user().id;
-  let forum = guild_id
+  let forum = match guild_id
     .create_channel(
       &ctx.http,
       serenity::CreateChannel::new(&channel_name)
@@ -92,7 +110,14 @@ async fn create_ai_space(
         ])
         .audit_log_reason("Create private AI space"),
     )
-    .await?;
+    .await
+  {
+    Ok(forum) => forum,
+    Err(error) => {
+      respond_with_ai_space_error(ctx, component, &error).await?;
+      return Ok(());
+    }
+  };
 
   respond_with_ai_space(ctx, component, forum.id).await
 }
@@ -102,11 +127,35 @@ async fn respond_with_ai_space(
   component: &serenity::ComponentInteraction,
   channel_id: serenity::ChannelId,
 ) -> Result<(), Error> {
-  reply_to_component(
-    ctx,
-    component,
-    format!("{} <#{}>", t("ai_space_created"), channel_id.get()),
-    true,
-  )
-  .await
+  component
+    .edit_response(
+      ctx,
+      serenity::EditInteractionResponse::new().content(format!(
+        "{} <#{}>",
+        t("ai_space_created"),
+        channel_id.get()
+      )),
+    )
+    .await?;
+
+  Ok(())
+}
+
+async fn respond_with_ai_space_error(
+  ctx: &serenity::Context,
+  component: &serenity::ComponentInteraction,
+  error: &serenity::Error,
+) -> Result<(), Error> {
+  component
+    .edit_response(
+      ctx,
+      serenity::EditInteractionResponse::new().content(format!(
+        "{} {}",
+        t("ai_space_failed"),
+        error
+      )),
+    )
+    .await?;
+
+  Ok(())
 }

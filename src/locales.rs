@@ -11,6 +11,7 @@ pub fn t(key: &str) -> &str {
     "ai_space_button" => "Create AI Space",
     "ai_space_created" => "Your AI space is ready:",
     "ai_space_missing_guild" => "AI spaces can only be created inside a server.",
+    "ai_space_failed" => "Could not create your AI space:",
     _ => key,
   }
 }
