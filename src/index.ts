@@ -21,7 +21,7 @@ client.once(Events.ClientReady, (client) => {
 client.on(Events.InteractionCreate, async (interaction) => {
 	if (!interaction.isChatInputCommand()) return;
 	if (!CUSTOMERS.includes(String(interaction.guildId))) {
-		replyToCommand(interaction, locales.not_eligible)
+		await replyToCommand(interaction, locales.not_eligible)
 		return
 	}
 
