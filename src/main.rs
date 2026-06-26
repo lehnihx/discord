@@ -1,4 +1,8 @@
+mod locales;
+
 use poise::serenity_prelude as serenity;
+
+use locales::t;
 
 const CUSTOMERS: &[u64] = &[1244750233582440488];
 
@@ -19,7 +23,7 @@ async fn reject_if_not_customer(ctx: Context<'_>) -> Result<bool, Error> {
 
     ctx.send(
         poise::CreateReply::default()
-            .content("Server not eligible")
+            .content(t("not_eligible"))
             .ephemeral(true),
     )
     .await?;
@@ -35,7 +39,7 @@ async fn ping(ctx: Context<'_>) -> Result<(), Error> {
 
     ctx.send(
         poise::CreateReply::default()
-            .content("Pong!")
+            .content(t("pong"))
             .ephemeral(true),
     )
     .await?;
@@ -51,12 +55,22 @@ async fn lenix(ctx: Context<'_>) -> Result<(), Error> {
 
     ctx.send(
         poise::CreateReply::default()
-            .content("Hi Lenix!")
+            .content(t("greet_lenix"))
             .ephemeral(true),
     )
     .await?;
 
     Ok(())
+}
+
+fn commands() -> Vec<poise::Command<Data, Error>> {
+    let mut ping = ping();
+    ping.description = Some(t("reply_pong").to_string());
+
+    let mut lenix = lenix();
+    lenix.description = Some(t("reply_lenix").to_string());
+
+    vec![ping, lenix]
 }
 
 #[tokio::main]
@@ -68,12 +82,12 @@ async fn main() -> Result<(), Error> {
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![ping(), lenix()],
+            commands: commands(),
             ..Default::default()
         })
         .setup(|ctx, ready, framework| {
             Box::pin(async move {
-                println!("Logged in as {}", ready.user.name);
+                println!("{} {}", t("logged_in_as"), ready.user.name);
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
                 Ok(Data)
             })
