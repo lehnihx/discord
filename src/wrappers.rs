@@ -3,28 +3,6 @@ use crate::{
   locales::t,
   types::{Context, Error},
 };
-use poise::serenity_prelude as serenity;
-
-pub async fn reply_to_component(
-  ctx: &serenity::Context,
-  component: &serenity::ComponentInteraction,
-  content: impl Into<String>,
-  ephemeral: bool,
-) -> Result<(), Error> {
-  component
-    .create_response(
-      ctx,
-      serenity::CreateInteractionResponse::Message(
-        serenity::CreateInteractionResponseMessage::new()
-          .content(content)
-          .ephemeral(ephemeral),
-      ),
-    )
-    .await?;
-
-  Ok(())
-}
-
 pub async fn customer_only(ctx: Context<'_>) -> Result<bool, Error> {
   if ctx
     .guild_id()
