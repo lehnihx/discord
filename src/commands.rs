@@ -1,7 +1,7 @@
 use crate::{
+  forums::send_ai_space_prompt,
   locales::t,
   types::{Context, Data, Error},
-  forums::send_ai_space_prompt,
 };
 
 #[poise::command(slash_command)]

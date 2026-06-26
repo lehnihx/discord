@@ -1,17 +1,17 @@
 mod commands;
 mod constants;
+mod forums;
 mod locales;
 mod types;
 mod wrappers;
-mod forums;
 
 use poise::serenity_prelude as serenity;
 
 use commands::commands;
+use forums::handle_event;
 use locales::t;
 use types::{Data, Error};
-use wrappers::{customer_only};
-use forums::{handle_event};
+use wrappers::customer_only;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
