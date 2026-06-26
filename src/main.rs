@@ -5,50 +5,22 @@ mod wrappers;
 
 use poise::serenity_prelude as serenity;
 
-use constants::CUSTOMERS;
+use constants::{CUSTOMERS};
 use locales::t;
 use types::{Context, Data, Error};
-use wrappers::{reply_to_command};
+use wrappers::{reply_to_command, commands};
 
-async fn reject_if_not_customer(ctx: Context<'_>) -> Result<bool, Error> {
+async fn customer_only(ctx: Context<'_>) -> Result<bool, Error> {
     if ctx
         .guild_id()
         .is_some_and(|guild_id| CUSTOMERS.contains(&guild_id.get()))
     {
-        return Ok(false);
+        return Ok(true);
     }
 
     reply_to_command(ctx, t("not_eligible"), true).await?;
 
-    Ok(true)
-}
-
-#[poise::command(slash_command)]
-async fn ping(ctx: Context<'_>) -> Result<(), Error> {
-    if reject_if_not_customer(ctx).await? {
-        return Ok(());
-    }
-
-    reply_to_command(ctx, t("pong"), true).await
-}
-
-#[poise::command(slash_command)]
-async fn lenix(ctx: Context<'_>) -> Result<(), Error> {
-    if reject_if_not_customer(ctx).await? {
-        return Ok(());
-    }
-
-    reply_to_command(ctx, t("greet_lenix"), true).await
-}
-
-fn commands() -> Vec<poise::Command<Data, Error>> {
-    let mut ping = ping();
-    ping.description = Some(t("reply_pong").to_string());
-
-    let mut lenix = lenix();
-    lenix.description = Some(t("reply_lenix").to_string());
-
-    vec![ping, lenix]
+    Ok(false)
 }
 
 #[tokio::main]
@@ -61,6 +33,7 @@ async fn main() -> Result<(), Error> {
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
             commands: commands(),
+            command_check: Some(|ctx| Box::pin(customer_only(ctx))),
             ..Default::default()
         })
         .setup(|ctx, ready, framework| {
