@@ -1,23 +1,16 @@
 mod locales;
+mod constants;
+mod types;
 
 use poise::serenity_prelude as serenity;
 
 use locales::t;
+use constants::{CUSTOMERS};
+use types::{Data, Error, Context};
 
-const CUSTOMERS: &[u64] = &[1244750233582440488];
-
-struct Data;
-
-type Error = Box<dyn std::error::Error + Send + Sync>;
-type Context<'a> = poise::Context<'a, Data, Error>;
-
-fn is_customer(ctx: Context<'_>) -> bool {
-    ctx.guild_id()
-        .is_some_and(|guild_id| CUSTOMERS.contains(&guild_id.get()))
-}
 
 async fn reject_if_not_customer(ctx: Context<'_>) -> Result<bool, Error> {
-    if is_customer(ctx) {
+    if ctx.guild_id().is_some_and(|guild_id| CUSTOMERS.contains(&guild_id.get())) {
         return Ok(false);
     }
 
