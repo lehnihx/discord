@@ -1,4 +1,4 @@
-use crate::{constants::COMMANDS, locales::t, types::{ActionFn, Context, Data, Error}};
+use crate::{constants::{CUSTOMERS}, locales::t, types::{ActionFn, Context, Data, Error}, config::{COMMANDS}};
 
 pub async fn reply_to_command(
     ctx: Context<'_>,
@@ -13,6 +13,19 @@ pub async fn reply_to_command(
     .await?;
 
     Ok(())
+}
+
+pub async fn customer_only(ctx: Context<'_>) -> Result<bool, Error> {
+    if ctx
+        .guild_id()
+        .is_some_and(|guild_id| CUSTOMERS.contains(&guild_id.get()))
+    {
+        return Ok(true);
+    }
+
+    reply_to_command(ctx, t("not_eligible"), true).await?;
+
+    Ok(false)
 }
 
 fn run_command_action<'a>(

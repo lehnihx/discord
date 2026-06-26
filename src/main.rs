@@ -2,26 +2,13 @@ mod constants;
 mod locales;
 mod types;
 mod wrappers;
+mod config;
 
 use poise::serenity_prelude as serenity;
 
-use constants::{CUSTOMERS};
 use locales::t;
-use types::{Context, Data, Error};
-use wrappers::{reply_to_command, commands};
-
-async fn customer_only(ctx: Context<'_>) -> Result<bool, Error> {
-    if ctx
-        .guild_id()
-        .is_some_and(|guild_id| CUSTOMERS.contains(&guild_id.get()))
-    {
-        return Ok(true);
-    }
-
-    reply_to_command(ctx, t("not_eligible"), true).await?;
-
-    Ok(false)
-}
+use types::{Data, Error};
+use wrappers::{commands, customer_only};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
