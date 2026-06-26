@@ -1,14 +1,17 @@
-mod config;
+mod commands;
 mod constants;
 mod locales;
 mod types;
 mod wrappers;
+mod forums;
 
 use poise::serenity_prelude as serenity;
 
+use commands::commands;
 use locales::t;
 use types::{Data, Error};
-use wrappers::{commands, customer_only};
+use wrappers::{customer_only};
+use forums::{handle_event};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -21,6 +24,9 @@ async fn main() -> Result<(), Error> {
     .options(poise::FrameworkOptions {
       commands: commands(),
       command_check: Some(|ctx| Box::pin(customer_only(ctx))),
+      event_handler: |ctx, event, _framework, _data| {
+        Box::pin(async move { handle_event(ctx, event).await })
+      },
       ..Default::default()
     })
     .setup(|ctx, ready, framework| {

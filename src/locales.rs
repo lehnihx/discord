@@ -6,6 +6,11 @@ pub fn t(key: &str) -> &str {
     "greet_lenix" => "Hi Lenix!",
     "reply_pong" => "Replies with Pong!",
     "reply_lenix" => "Replies with Hi Lenix!",
+    "reply_ai_space" => "Create or open your private AI space",
+    "ai_space_prompt" => "Create your private AI forum space.",
+    "ai_space_button" => "Create AI Space",
+    "ai_space_created" => "Your AI space is ready:",
+    "ai_space_missing_guild" => "AI spaces can only be created inside a server.",
     _ => key,
   }
 }
