@@ -303,7 +303,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "discord-rust"
+name = "discord"
 version = "0.1.0"
 dependencies = [
  "dotenvy",
