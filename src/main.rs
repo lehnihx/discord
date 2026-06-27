@@ -18,7 +18,9 @@ async fn main() -> Result<(), Error> {
   dotenvy::dotenv().ok();
 
   let token = std::env::var("TOKEN").expect("TOKEN is missing from .env");
-  let intents = serenity::GatewayIntents::GUILDS;
+  let intents = serenity::GatewayIntents::GUILDS
+    | serenity::GatewayIntents::GUILD_MESSAGES
+    | serenity::GatewayIntents::MESSAGE_CONTENT;
 
   let framework = poise::Framework::builder()
     .options(poise::FrameworkOptions {

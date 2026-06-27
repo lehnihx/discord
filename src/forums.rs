@@ -10,19 +10,21 @@ pub async fn handle_event(
   ctx: &serenity::Context,
   event: &serenity::FullEvent,
 ) -> Result<(), Error> {
-  let serenity::FullEvent::InteractionCreate { interaction } = event else {
-    return Ok(());
-  };
+  match event {
+    serenity::FullEvent::InteractionCreate { interaction } => {
+      let Some(component) = interaction.as_message_component() else {
+        return Ok(());
+      };
 
-  let Some(component) = interaction.as_message_component() else {
-    return Ok(());
-  };
+      if component.data.custom_id != "create_ai_space" {
+        return Ok(());
+      }
 
-  if component.data.custom_id != "create_ai_space" {
-    return Ok(());
+      create_ai_space(ctx, component).await
+    }
+    serenity::FullEvent::Message { new_message } => handle_ai_space_message(ctx, new_message).await,
+    _ => Ok(()),
   }
-
-  create_ai_space(ctx, component).await
 }
 
 pub async fn send_ai_space_prompt(ctx: Context<'_>) -> Result<(), Error> {
@@ -183,6 +185,55 @@ async fn respond_with_ai_space_error(
         t("ai_space_failed"),
         error
       )),
+    )
+    .await?;
+
+  Ok(())
+}
+
+async fn handle_ai_space_message(
+  ctx: &serenity::Context,
+  message: &serenity::Message,
+) -> Result<(), Error> {
+  if message.author.bot {
+    return Ok(());
+  }
+
+  let Some(guild_id) = message.guild_id else {
+    return Ok(());
+  };
+
+  let serenity::Channel::Guild(thread) = message.channel_id.to_channel(ctx).await? else {
+    return Ok(());
+  };
+
+  if thread.thread_metadata.is_none() {
+    return Ok(());
+  }
+
+  let Some(parent_id) = thread.parent_id else {
+    return Ok(());
+  };
+
+  let channels = guild_id.channels(&ctx.http).await?;
+  let Some(parent) = channels.get(&parent_id) else {
+    return Ok(());
+  };
+
+  if parent.kind != serenity::ChannelType::Forum || !parent.name.starts_with("ai-") {
+    return Ok(());
+  }
+
+  message
+    .channel_id
+    .say(
+      ctx,
+      format!(
+        "{}\nTopic: {}\nMessage: {}",
+        t("ai_placeholder_prefix"),
+        thread.name,
+        message.content
+      ),
     )
     .await?;
 
