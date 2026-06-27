@@ -1,11 +1,6 @@
 use poise::serenity_prelude as serenity;
 
-use crate::{
-  ai,
-  constants::AI_SPACES_CATEGORY_ID,
-  locales::t,
-  types::{Error},
-};
+use crate::{ai, constants::AI_SPACES_CATEGORY_ID, locales::t, types::Error};
 
 pub async fn handle_event(
   ctx: &serenity::Context,
@@ -208,7 +203,14 @@ async fn handle_ai_space_message(
     return Ok(());
   }
 
-  let reply = match ai::generate_reply(&thread.name, &message.content).await {
+  let reply = match ai::generate_reply(
+    &thread.name,
+    &message.content,
+    message.author.id.get(),
+    message.author.display_name(),
+  )
+  .await
+  {
     Ok(reply) => reply,
     Err(error) => format!("{} {}", t("ai_failed"), error),
   };

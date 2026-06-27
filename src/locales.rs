@@ -15,9 +15,9 @@ pub fn t(key: &str) -> &str {
     "ai_space_failed" => "Could not create your AI space:",
     "ai_failed" => "AI request failed:",
     "api_key_err" => "API_KEY key is missing",
-		"api_err" => "AI API error:",
-		"api_nochoices" => "AI API returned no choices",
-		"token_missing" => "TOKEN is missing from .env",
+    "api_err" => "AI API error:",
+    "api_nochoices" => "AI API returned no choices",
+    "token_missing" => "TOKEN is missing from .env",
     _ => key,
   }
 }

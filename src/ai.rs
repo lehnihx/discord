@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-  constants::{AI_COUNTRY, AI_DOMAINS, AI_MODEL, AI_TEMPERATURE},
+  constants::{AI_COUNTRY, AI_DOMAINS, AI_MODEL, AI_PROMPT, AI_TEMPERATURE},
   locales::t,
   types::Error,
 };
@@ -12,7 +12,7 @@ struct ChatRequest {
   messages: Vec<ChatMessage>,
   temperature: f32,
   search_settings: SearchSettings,
-  user: &'static str,
+  user: String,
 }
 
 #[derive(Serialize)]
@@ -43,7 +43,12 @@ struct ChatChoiceMessage {
   content: String,
 }
 
-pub async fn generate_reply(topic: &str, user_message: &str) -> Result<String, Error> {
+pub async fn generate_reply(
+  topic: &str,
+  user_message: &str,
+  user_id: u64,
+  display_name: &str,
+) -> Result<String, Error> {
   let api_key = std::env::var("API_KEY").expect(t("api_key_err"));
   let client = reqwest::Client::new();
 
@@ -58,14 +63,16 @@ pub async fn generate_reply(topic: &str, user_message: &str) -> Result<String, E
     messages: vec![
       ChatMessage {
         role: "system",
-        content: "You are a helpful AI assistant inside a Discord forum thread. Reply clearly and concisely.".to_string(),
+        content: AI_PROMPT.to_string(),
       },
       ChatMessage {
         role: "user",
-        content: format!("UserTopic: {topic}\n\nMessage: {user_message}"),
+        content: format!(
+          "User: {display_name}\n\nTopic: {topic}\n\nMessage: {user_message}"
+        ),
       },
     ],
-		user: ""
+    user: user_id.to_string(),
   };
 
   let response = client
@@ -76,12 +83,12 @@ pub async fn generate_reply(topic: &str, user_message: &str) -> Result<String, E
     .await?;
 
   if !response.status().is_success() {
-    return Err(format!("Groq API error: {}", response.text().await?).into());
+    return Err(format!("{} {}", t("api_err"), response.text().await?).into());
   }
 
   let response = response.json::<ChatResponse>().await?;
   let Some(choice) = response.choices.into_iter().next() else {
-    return Err("Groq API returned no choices".into());
+    return Err(t("api_nochoices").into());
   };
 
   Ok(choice.message.content)
