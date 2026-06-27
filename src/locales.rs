@@ -9,8 +9,9 @@ pub fn t(key: &str) -> &str {
     "reply_ai_space" => "Create or open your private AI space",
     "ai_space_prompt" => "Create your private AI forum space.",
     "ai_space_button" => "Create AI Space",
-    "ai_space_created" => "Your AI space is ready:",
+    "ai_space_created" => "Here is your AI space:",
     "ai_space_missing_guild" => "AI spaces can only be created inside a server.",
+    "ai_space_missing_category" => "AI spaces category is not configured or cannot be found.",
     "ai_space_failed" => "Could not create your AI space:",
     _ => key,
   }

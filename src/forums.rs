@@ -1,6 +1,7 @@
 use poise::serenity_prelude as serenity;
 
 use crate::{
+  constants::AI_SPACES_CATEGORY_ID,
   locales::t,
   types::{Context, Error},
 };
@@ -75,13 +76,41 @@ async fn create_ai_space(
     return Ok(());
   }
 
+  let category_id = if AI_SPACES_CATEGORY_ID == 0 {
+    None
+  } else {
+    let category_id = serenity::ChannelId::new(AI_SPACES_CATEGORY_ID);
+
+    if !channels
+      .values()
+      .any(|channel| channel.kind == serenity::ChannelType::Category && channel.id == category_id)
+    {
+      component
+        .edit_response(
+          ctx,
+          serenity::EditInteractionResponse::new().content(t("ai_space_missing_category")),
+        )
+        .await?;
+
+      return Ok(());
+    }
+
+    Some(category_id)
+  };
+
+  let mut builder = serenity::CreateChannel::new(&channel_name)
+    .kind(serenity::ChannelType::Forum)
+    .topic(format!("Private AI space for {}", component.user.name));
+
+  if let Some(category_id) = category_id {
+    builder = builder.category(category_id);
+  }
+
   let bot_user_id = ctx.cache.current_user().id;
   let forum = match guild_id
     .create_channel(
       &ctx.http,
-      serenity::CreateChannel::new(&channel_name)
-        .kind(serenity::ChannelType::Forum)
-        .topic(format!("Private AI space for {}", component.user.name))
+      builder
         .permissions(vec![
           serenity::PermissionOverwrite {
             allow: serenity::Permissions::empty(),
