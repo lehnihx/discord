@@ -3,13 +3,13 @@ use serde::{Deserialize, Serialize};
 use crate::{
   constants::{AI_COUNTRY, AI_DOMAINS, AI_MODEL, AI_PROMPT, AI_TEMPERATURE},
   locales::t,
-  types::Error,
+  types::{ConversationMessage, Error},
 };
 
 #[derive(Serialize)]
 struct ChatRequest {
   model: &'static str,
-  messages: Vec<ChatMessage>,
+  messages: Vec<ConversationMessage>,
   temperature: f32,
   search_settings: SearchSettings,
   user: String,
@@ -20,12 +20,6 @@ struct SearchSettings {
   country: &'static str,
   include_domains: &'static [&'static str],
   include_images: bool,
-}
-
-#[derive(Serialize)]
-struct ChatMessage {
-  role: &'static str,
-  content: String,
 }
 
 #[derive(Deserialize)]
@@ -48,11 +42,23 @@ pub async fn generate_reply(
   user_message: &str,
   user_id: u64,
   display_name: &str,
+  history: &[ConversationMessage],
 ) -> Result<String, Error> {
   let api_key = std::env::var("API_KEY")?;
   let client = reqwest::Client::builder()
     .timeout(std::time::Duration::from_secs(30))
     .build()?;
+
+  let mut messages = vec![ConversationMessage {
+    role: "system",
+    content: AI_PROMPT.to_string(),
+  }];
+
+  messages.extend_from_slice(history);
+  messages.push(ConversationMessage {
+    role: "user",
+    content: format!("User: {display_name}\n\nTopic: {topic}\n\nMessage: {user_message}"),
+  });
 
   let request = ChatRequest {
     model: AI_MODEL,
@@ -62,16 +68,7 @@ pub async fn generate_reply(
       include_domains: AI_DOMAINS,
       include_images: true,
     },
-    messages: vec![
-      ChatMessage {
-        role: "system",
-        content: AI_PROMPT.to_string(),
-      },
-      ChatMessage {
-        role: "user",
-        content: format!("User: {display_name}\n\nTopic: {topic}\n\nMessage: {user_message}"),
-      },
-    ],
+    messages,
     user: user_id.to_string(),
   };
 

@@ -1,10 +1,16 @@
 use poise::serenity_prelude as serenity;
 
-use crate::{ai, constants::AI_SPACES_CATEGORY_ID, locales::t, types::Error};
+use crate::{
+  ai,
+  constants::AI_SPACES_CATEGORY_ID,
+  locales::t,
+  types::{ConversationMessage, Data, Error},
+};
 
 pub async fn handle_event(
   ctx: &serenity::Context,
   event: &serenity::FullEvent,
+  data: &Data,
 ) -> Result<(), Error> {
   match event {
     serenity::FullEvent::InteractionCreate { interaction } => {
@@ -19,7 +25,7 @@ pub async fn handle_event(
       create_ai_space(ctx, component).await
     }
     serenity::FullEvent::Message { new_message } => {
-      if let Err(error) = handle_ai_space_message(ctx, new_message).await {
+      if let Err(error) = handle_ai_space_message(ctx, new_message, data).await {
         if !new_message.author.bot {
           new_message
             .reply(ctx, format!("{} {}", t("ai_failed"), error))
@@ -183,6 +189,7 @@ async fn respond_with_ai_space_error(
 async fn handle_ai_space_message(
   ctx: &serenity::Context,
   message: &serenity::Message,
+  data: &Data,
 ) -> Result<(), Error> {
   if message.author.bot {
     return Ok(());
@@ -213,11 +220,30 @@ async fn handle_ai_space_message(
     return Ok(());
   }
 
+  let user_entry = ConversationMessage {
+    role: "user",
+    content: format!(
+      "User: {}\n\nTopic: {}\n\nMessage: {}",
+      message.author.display_name(),
+      thread.name,
+      message.content
+    ),
+  };
+
+  let history = {
+    let conversations = data.conversations.lock().await;
+    conversations
+      .get(&message.channel_id.get())
+      .cloned()
+      .unwrap_or_default()
+  };
+
   let reply = match ai::generate_reply(
     &thread.name,
     &message.content,
     message.author.id.get(),
     message.author.display_name(),
+    &history,
   )
   .await
   {
@@ -225,7 +251,15 @@ async fn handle_ai_space_message(
     Err(error) => format!("{} {}", t("ai_failed"), error),
   };
 
-  message.reply(ctx, reply).await?;
+  message.reply(ctx, reply.clone()).await?;
+
+  let mut conversations = data.conversations.lock().await;
+  let conversation = conversations.entry(message.channel_id.get()).or_default();
+  conversation.push(user_entry);
+  conversation.push(ConversationMessage {
+    role: "assistant",
+    content: reply,
+  });
 
   Ok(())
 }

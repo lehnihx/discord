@@ -27,8 +27,8 @@ async fn main() -> Result<(), Error> {
     .options(poise::FrameworkOptions {
       commands: commands(),
       command_check: Some(|ctx| Box::pin(customer_only(ctx))),
-      event_handler: |ctx, event, _framework, _data| {
-        Box::pin(async move { handle_event(ctx, event).await })
+      event_handler: |ctx, event, _framework, data| {
+        Box::pin(async move { handle_event(ctx, event, data).await })
       },
       ..Default::default()
     })
@@ -36,7 +36,9 @@ async fn main() -> Result<(), Error> {
       Box::pin(async move {
         println!("{} {}", t("logged_in_as"), ready.user.name);
         poise::builtins::register_globally(ctx, &framework.options().commands).await?;
-        Ok(Data)
+        Ok(Data {
+          conversations: Default::default(),
+        })
       })
     })
     .build();

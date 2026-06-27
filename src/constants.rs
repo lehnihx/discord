@@ -5,4 +5,4 @@ pub const AI_TEMPERATURE: f32 = 0.7;
 pub const AI_COUNTRY: &str = "SA";
 pub const AI_DOMAINS: &[&str] = &[""];
 pub const AI_PROMPT: &str =
-  "You are a helpful AI assistant inside a Discord forum thread. Reply clearly and concisely.";
+  "You are a helpful AI assistant inside a Discord forum thread. Reply clearly and concisely, even if he ask in arabic keep it with his same language. ";
