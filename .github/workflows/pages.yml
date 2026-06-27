@@ -27,6 +27,9 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
+      - name: Configure Pages
+        uses: actions/configure-pages@v6
+
       - name: Install dependencies
         run: bun install --frozen-lockfile
         working-directory: legal-site
@@ -36,7 +39,7 @@ jobs:
         working-directory: legal-site
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: legal-site/dist
 
@@ -49,4 +52,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
