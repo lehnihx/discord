@@ -1,16 +1,25 @@
 use serde::{Deserialize, Serialize};
 
-use crate::types::Error;
-
-const GROQ_API_URL: &str = "https://api.groq.com/openai/v1/chat/completions";
-const GROQ_MODEL: &str = "llama-3.1-8b-instant";
+use crate::{
+  constants::{AI_COUNTRY, AI_DOMAINS, AI_MODEL, AI_TEMPERATURE},
+  locales::t,
+  types::Error,
+};
 
 #[derive(Serialize)]
 struct ChatRequest {
   model: &'static str,
   messages: Vec<ChatMessage>,
   temperature: f32,
-  max_tokens: u16,
+  search_settings: SearchSettings,
+  user: &'static str,
+}
+
+#[derive(Serialize)]
+struct SearchSettings {
+  country: &'static str,
+  include_domains: &'static [&'static str],
+  include_images: bool,
 }
 
 #[derive(Serialize)]
@@ -35,14 +44,17 @@ struct ChatChoiceMessage {
 }
 
 pub async fn generate_reply(topic: &str, user_message: &str) -> Result<String, Error> {
-  let api_key = std::env::var("API_KEY").expect("API_KEY key is missing");
-	println!("{}", api_key);
+  let api_key = std::env::var("API_KEY").expect(t("api_key_err"));
   let client = reqwest::Client::new();
 
   let request = ChatRequest {
-    model: GROQ_MODEL,
-    temperature: 0.7,
-    max_tokens: 700,
+    model: AI_MODEL,
+    temperature: AI_TEMPERATURE,
+    search_settings: SearchSettings {
+      country: AI_COUNTRY,
+      include_domains: AI_DOMAINS,
+      include_images: true,
+    },
     messages: vec![
       ChatMessage {
         role: "system",
@@ -50,13 +62,14 @@ pub async fn generate_reply(topic: &str, user_message: &str) -> Result<String, E
       },
       ChatMessage {
         role: "user",
-        content: format!("Topic: {topic}\n\nMessage: {user_message}"),
+        content: format!("UserTopic: {topic}\n\nMessage: {user_message}"),
       },
     ],
+		user: ""
   };
 
   let response = client
-    .post(GROQ_API_URL)
+    .post("https://api.groq.com/openai/v1/chat/completions")
     .bearer_auth(api_key)
     .json(&request)
     .send()

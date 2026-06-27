@@ -4,7 +4,7 @@ use crate::{
   ai,
   constants::AI_SPACES_CATEGORY_ID,
   locales::t,
-  types::{Context, Error},
+  types::{Error},
 };
 
 pub async fn handle_event(
@@ -26,23 +26,6 @@ pub async fn handle_event(
     serenity::FullEvent::Message { new_message } => handle_ai_space_message(ctx, new_message).await,
     _ => Ok(()),
   }
-}
-
-pub async fn send_ai_space_prompt(ctx: Context<'_>) -> Result<(), Error> {
-  ctx
-    .send(
-      poise::CreateReply::default()
-        .content(t("ai_space_prompt"))
-        .ephemeral(false)
-        .components(vec![serenity::CreateActionRow::Buttons(vec![
-          serenity::CreateButton::new("create_ai_space")
-            .label(t("ai_space_button"))
-            .style(serenity::ButtonStyle::Primary),
-        ])]),
-    )
-    .await?;
-
-  Ok(())
 }
 
 async fn create_ai_space(

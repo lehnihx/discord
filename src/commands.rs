@@ -1,8 +1,9 @@
 use crate::{
-  forums::send_ai_space_prompt,
   locales::t,
   types::{Context, Data, Error},
 };
+
+use poise::serenity_prelude as serenity;
 
 #[poise::command(slash_command)]
 async fn ping(ctx: Context<'_>) -> Result<(), Error> {
@@ -32,7 +33,20 @@ async fn lenix(ctx: Context<'_>) -> Result<(), Error> {
 
 #[poise::command(slash_command)]
 async fn ai_space(ctx: Context<'_>) -> Result<(), Error> {
-  send_ai_space_prompt(ctx).await
+  ctx
+    .send(
+      poise::CreateReply::default()
+        .content(t("ai_space_prompt"))
+        .ephemeral(false)
+        .components(vec![serenity::CreateActionRow::Buttons(vec![
+          serenity::CreateButton::new("create_ai_space")
+            .label(t("ai_space_button"))
+            .style(serenity::ButtonStyle::Primary),
+        ])]),
+    )
+    .await?;
+
+  Ok(())
 }
 
 pub fn commands() -> Vec<poise::Command<Data, Error>> {

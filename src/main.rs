@@ -18,7 +18,7 @@ use wrappers::customer_only;
 async fn main() -> Result<(), Error> {
   dotenvy::dotenv().ok();
 
-  let token = std::env::var("TOKEN").expect("TOKEN is missing from .env");
+  let token = std::env::var("TOKEN").expect(t("token_missing"));
   let intents = serenity::GatewayIntents::GUILDS
     | serenity::GatewayIntents::GUILD_MESSAGES
     | serenity::GatewayIntents::MESSAGE_CONTENT;
