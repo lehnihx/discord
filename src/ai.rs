@@ -49,8 +49,10 @@ pub async fn generate_reply(
   user_id: u64,
   display_name: &str,
 ) -> Result<String, Error> {
-  let api_key = std::env::var("API_KEY").expect(t("api_key_err"));
-  let client = reqwest::Client::new();
+  let api_key = std::env::var("API_KEY")?;
+  let client = reqwest::Client::builder()
+    .timeout(std::time::Duration::from_secs(30))
+    .build()?;
 
   let request = ChatRequest {
     model: AI_MODEL,
@@ -67,9 +69,7 @@ pub async fn generate_reply(
       },
       ChatMessage {
         role: "user",
-        content: format!(
-          "User: {display_name}\n\nTopic: {topic}\n\nMessage: {user_message}"
-        ),
+        content: format!("User: {display_name}\n\nTopic: {topic}\n\nMessage: {user_message}"),
       },
     ],
     user: user_id.to_string(),
@@ -91,5 +91,5 @@ pub async fn generate_reply(
     return Err(t("api_nochoices").into());
   };
 
-  Ok(choice.message.content)
+  Ok(choice.message.content.chars().take(1900).collect())
 }

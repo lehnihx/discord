@@ -18,7 +18,17 @@ pub async fn handle_event(
 
       create_ai_space(ctx, component).await
     }
-    serenity::FullEvent::Message { new_message } => handle_ai_space_message(ctx, new_message).await,
+    serenity::FullEvent::Message { new_message } => {
+      if let Err(error) = handle_ai_space_message(ctx, new_message).await {
+        if !new_message.author.bot {
+          new_message
+            .reply(ctx, format!("{} {}", t("ai_failed"), error))
+            .await?;
+        }
+      }
+
+      Ok(())
+    }
     _ => Ok(()),
   }
 }
