@@ -13,7 +13,7 @@ pub fn t(key: &str) -> &str {
     "ai_space_missing_guild" => "AI spaces can only be created inside a server.",
     "ai_space_missing_category" => "AI spaces category is not configured or cannot be found.",
     "ai_space_failed" => "Could not create your AI space:",
-    "ai_placeholder_prefix" => "AI placeholder reply",
+    "ai_failed" => "AI request failed:",
     _ => key,
   }
 }

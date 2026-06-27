@@ -1,3 +1,4 @@
+mod ai;
 mod commands;
 mod constants;
 mod forums;
