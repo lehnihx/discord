@@ -225,8 +225,7 @@ async fn handle_ai_space_message(
   }
 
   message
-    .channel_id
-    .say(
+    .reply(
       ctx,
       format!(
         "{}\nTopic: {}\nMessage: {}",
